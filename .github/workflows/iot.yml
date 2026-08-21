@@ -1,0 +1,67 @@
+name: IoT simulations
+
+# Full firmware builds and Wokwi simulation scenarios. These burn Wokwi
+# simulation minutes (free tier: 50 min/month), so they run only when the
+# firmware changes or when triggered by hand, and only if a Wokwi CI token is
+# configured. The structural checks in ci.yml always run regardless.
+
+on:
+  push:
+    branches: [main]
+    paths: ["iot/**"]
+  workflow_dispatch:
+
+jobs:
+  simulate:
+    name: Compile + scenario tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check a Wokwi token is available
+        id: token
+        run: |
+          if [ -n "${{ secrets.WOKWI_CLI_TOKEN }}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "WOKWI_CLI_TOKEN not set - skipping simulations."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/cache@v4
+        if: steps.token.outputs.available == 'true'
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-esp32
+      - uses: actions/cache@v4
+        if: steps.token.outputs.available == 'true'
+        with:
+          path: ~/.wokwi
+          key: wokwi-cli-${{ runner.os }}
+      - name: Install tooling
+        if: steps.token.outputs.available == 'true'
+        run: |
+          pipx install platformio
+          curl -fsS https://wokwi-cli.s3.eu-central-1.amazonaws.com/install.sh | sh
+          echo "$HOME/.wokwi/bin" >> "$GITHUB_PATH"
+      - name: Structural checks (no token needed)
+        run: python3 iot/test/validate_sketches.py
+      - name: Compile all firmwares
+        if: steps.token.outputs.available == 'true'
+        run: pio run -d iot/network-monitor && pio run -d iot/water-leak-sensor && pio run -d iot/fire-smoke-sensor
+      - name: Network monitor scenario
+        if: steps.token.outputs.available == 'true'
+        working-directory: iot/network-monitor
+        env:
+          WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+        run: wokwi-cli . --timeout 45000 --scenario scenario.yaml
+      - name: Water leak scenario
+        if: steps.token.outputs.available == 'true'
+        working-directory: iot/water-leak-sensor
+        env:
+          WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+        run: wokwi-cli . --timeout 40000 --scenario scenario.yaml
+      - name: Fire/smoke scenario
+        if: steps.token.outputs.available == 'true'
+        working-directory: iot/fire-smoke-sensor
+        env:
+          WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+        run: wokwi-cli . --timeout 30000 --scenario scenario.yaml

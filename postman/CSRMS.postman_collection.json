@@ -1,0 +1,329 @@
+{
+  "info": {
+    "name": "CSRMS API",
+    "description": "Campus Service Request Management System - all endpoints.\n\n1. Run the Django server and `python manage.py seed_demo`.\n2. Use Auth > Login - it stores the JWT pair automatically.\n3. Paste the three device keys from seed_demo into the collection variables (network_key, water_key, fire_key).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api" },
+    { "key": "access", "value": "" },
+    { "key": "refresh", "value": "" },
+    { "key": "network_key", "value": "" },
+    { "key": "water_key", "value": "" },
+    { "key": "fire_key", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{access}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (always creates STUDENT)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/register/", "host": ["{{base_url}}"], "path": ["auth", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"naledi\",\n  \"password\": \"Campus#2026\",\n  \"email\": \"naledi@student.spu.ac.za\",\n  \"first_name\": \"Naledi\",\n  \"last_name\": \"Khumalo\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login (stores tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const body = pm.response.json();",
+                  "if (body.access) {",
+                  "  pm.collectionVariables.set('access', body.access);",
+                  "  pm.collectionVariables.set('refresh', body.refresh);",
+                  "}",
+                  "pm.test('login ok', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/login/", "host": ["{{base_url}}"], "path": ["auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Campus#2026\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/refresh/", "host": ["{{base_url}}"], "path": ["auth", "refresh"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refresh\": \"{{refresh}}\"\n}" }
+          }
+        },
+        {
+          "name": "Logout (blacklist refresh)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/auth/logout/", "host": ["{{base_url}}"], "path": ["auth", "logout"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refresh\": \"{{refresh}}\"\n}" }
+          }
+        },
+        {
+          "name": "My profile",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/auth/me/", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users (admin)",
+      "item": [
+        {
+          "name": "List users",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/users/", "host": ["{{base_url}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Create staff account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/users/", "host": ["{{base_url}}"], "path": ["users"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"lerato\",\n  \"password\": \"Campus#2026\",\n  \"email\": \"lerato@spu.ac.za\",\n  \"first_name\": \"Lerato\",\n  \"last_name\": \"Mokoena\",\n  \"role\": \"STAFF\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Retrieve user",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/users/2/", "host": ["{{base_url}}"], "path": ["users", "2"] }
+          }
+        },
+        {
+          "name": "Deactivate user",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/users/2/", "host": ["{{base_url}}"], "path": ["users", "2"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/categories/", "host": ["{{base_url}}"], "path": ["categories"] }
+          }
+        },
+        {
+          "name": "Create category (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/categories/", "host": ["{{base_url}}"], "path": ["categories"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Transport\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Requests",
+      "item": [
+        {
+          "name": "List requests (scoped)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/requests/?status=PENDING&priority=HIGH",
+              "host": ["{{base_url}}"],
+              "path": ["requests"],
+              "query": [
+                { "key": "status", "value": "PENDING", "disabled": true },
+                { "key": "priority", "value": "HIGH", "disabled": true },
+                { "key": "category", "value": "1", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/requests/", "host": ["{{base_url}}"], "path": ["requests"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"WiFi outage in Science Lab 2\",\n  \"description\": \"No connectivity since 08:00, affecting a practical session.\",\n  \"category_id\": 1,\n  \"location\": \"Science block · Lab 2\",\n  \"priority\": \"HIGH\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Request detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/requests/1/", "host": ["{{base_url}}"], "path": ["requests", "1"] }
+          }
+        },
+        {
+          "name": "Edit request (owner while pending / staff anytime)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/requests/1/", "host": ["{{base_url}}"], "path": ["requests", "1"] },
+            "body": { "mode": "raw", "raw": "{\n  \"location\": \"Science block · Lab 3\"\n}" }
+          }
+        },
+        {
+          "name": "Cancel request",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{base_url}}/requests/1/", "host": ["{{base_url}}"], "path": ["requests", "1"] }
+          }
+        },
+        {
+          "name": "Change status (staff/admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/requests/1/status/", "host": ["{{base_url}}"], "path": ["requests", "1", "status"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"IN_PROGRESS\",\n  \"comment\": \"Replacing the access point.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign to staff (staff/admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/requests/1/assign/", "host": ["{{base_url}}"], "path": ["requests", "1", "assign"] },
+            "body": { "mode": "raw", "raw": "{\n  \"assigned_to\": 2\n}" }
+          }
+        },
+        {
+          "name": "Add comment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{base_url}}/requests/1/updates/", "host": ["{{base_url}}"], "path": ["requests", "1", "updates"] },
+            "body": { "mode": "raw", "raw": "{\n  \"comment\": \"Any update on this?\"\n}" }
+          }
+        },
+        {
+          "name": "Full history timeline",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/requests/1/history/", "host": ["{{base_url}}"], "path": ["requests", "1", "history"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Telemetry (device keys)",
+      "item": [
+        {
+          "name": "Network check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Device-Key", "value": "{{network_key}}" }
+            ],
+            "url": { "raw": "{{base_url}}/telemetry/network/", "host": ["{{base_url}}"], "path": ["telemetry", "network"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reachable\": false,\n  \"latency_ms\": 0,\n  \"location\": \"Campus core switch\",\n  \"device_id\": \"net-01\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Water moisture reading",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Device-Key", "value": "{{water_key}}" }
+            ],
+            "url": { "raw": "{{base_url}}/telemetry/water/", "host": ["{{base_url}}"], "path": ["telemetry", "water"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"moisture_percent\": 85,\n  \"location\": \"Residence C · geyser room\",\n  \"device_id\": \"water-01\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Fire/smoke reading",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Device-Key", "value": "{{fire_key}}" }
+            ],
+            "url": { "raw": "{{base_url}}/telemetry/fire/", "host": ["{{base_url}}"], "path": ["telemetry", "fire"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"smoke_level\": 65,\n  \"temperature_c\": 52.5,\n  \"location\": \"ICT building · server room\",\n  \"device_id\": \"fire-01\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Telemetry history (staff/admin)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/telemetry/history/?range=24_hours",
+              "host": ["{{base_url}}"],
+              "path": ["telemetry", "history"],
+              "query": [{ "key": "range", "value": "24_hours" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & notifications",
+      "item": [
+        {
+          "name": "Dashboard counts (role-scoped)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/dashboard/", "host": ["{{base_url}}"], "path": ["dashboard"] }
+          }
+        },
+        {
+          "name": "My notifications",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/notifications/", "host": ["{{base_url}}"], "path": ["notifications"] }
+          }
+        }
+      ]
+    }
+  ]
+}

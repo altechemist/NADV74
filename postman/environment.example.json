@@ -1,0 +1,11 @@
+{
+  "name": "CSRMS local",
+  "values": {
+    "base_url": { "value": "http://127.0.0.1:8000" },
+    "access_token": { "value": "paste-after-login" },
+    "refresh_token": { "value": "paste-after-login" },
+    "network_device_key": { "value": "paste-key-from-seed_demo" },
+    "water_device_key": { "value": "paste-key-from-seed_demo" },
+    "fire_device_key": { "value": "paste-key-from-seed_demo" }
+  }
+}
