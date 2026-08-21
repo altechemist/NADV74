@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "author": "CSRMS Group",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-mq2-gas-sensor",
+      "id": "mq2",
+      "top": 40,
+      "left": 220,
+      "attrs": {}
+    },
+    { "type": "wokwi-dht22", "id": "dht", "top": 160, "left": 240, "attrs": {} }
+  ],
+  "connections": [
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []],
+    ["mq2:VCC", "esp:3V3", "red", []],
+    ["mq2:GND", "esp:GND.1", "black", []],
+    ["mq2:A0", "esp:34", "green", []],
+    ["dht:VCC", "esp:VIN", "red", []],
+    ["dht:GND", "esp:GND.2", "black", []],
+    ["dht:SDA", "esp:27", "orange", []]
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "author": "CSRMS Group",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pot",
+      "top": 60,
+      "left": 220,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []],
+    ["pot:GND", "esp:GND.1", "black", []],
+    ["pot:VCC", "esp:3V3", "red", []],
+    ["pot:SIG", "esp:34", "green", []]
+  ]
+}

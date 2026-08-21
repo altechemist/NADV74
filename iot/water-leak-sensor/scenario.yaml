@@ -1,0 +1,13 @@
+name: 'CSRMS water leak - high moisture reading is posted every cycle'
+version: 1
+author: 'CSRMS team'
+steps:
+  # Push the probe to ~90% moisture, well above the 60% backend threshold.
+  - set-control:
+      part-id: pot
+      control: position
+      value: 0.9
+  - wait-serial: 'connected.'
+  # First reading fires 20 simulated seconds after boot.
+  - delay: 22s
+  - wait-serial: 'Moisture'

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "author": "CSRMS Group",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 120,
+      "left": 200,
+      "attrs": { "value": "220" }
+    },
+    { "type": "wokwi-led", "id": "led", "top": 60, "left": 220, "attrs": { "color": "red" } }
+  ],
+  "connections": [
+    ["esp:TX0", "$serialMonitor:RX", "", []],
+    ["esp:RX0", "$serialMonitor:TX", "", []],
+    ["esp:2", "r1:1", "green", []],
+    ["r1:2", "led:A", "green", []],
+    ["led:C", "esp:GND.1", "black", []]
+  ]
+}

@@ -1,0 +1,11 @@
+name: 'CSRMS network monitor - boots, connects and completes a report cycle'
+version: 1
+author: 'CSRMS team'
+steps:
+  # The sketch prints " connected." once the Wokwi guest WiFi links up.
+  - wait-serial: 'connected.'
+  # First gateway check fires 30 simulated seconds after boot.
+  - delay: 32s
+  # The loop must reach the reporting line whether or not the campus
+  # API is reachable from CI (the HTTP code itself is not asserted here).
+  - wait-serial: 'Network check'

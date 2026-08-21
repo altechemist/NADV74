@@ -1,0 +1,17 @@
+{
+  "name": "csrms-iot",
+  "private": true,
+  "description": "Wokwi ESP32 simulations for the CSRMS sensors. Requires the wokwi-cli binary on PATH (https://docs.wokwi.com/wokwi-ci/cli-installation) and PlatformIO Core for compiling.",
+  "scripts": {
+    "check": "python3 test/validate_sketches.py",
+    "lint": "wokwi-cli lint network-monitor && wokwi-cli lint water-leak-sensor && wokwi-cli lint fire-smoke-sensor",
+    "compile": "pio run -d network-monitor && pio run -d water-leak-sensor && pio run -d fire-smoke-sensor",
+    "sim:network": "wokwi-cli network-monitor --timeout 45000",
+    "sim:water": "wokwi-cli water-leak-sensor --timeout 40000",
+    "sim:fire": "wokwi-cli fire-smoke-sensor --timeout 30000",
+    "test:network": "cd network-monitor && wokwi-cli . --timeout 45000 --scenario scenario.yaml",
+    "test:water": "cd water-leak-sensor && wokwi-cli . --timeout 40000 --scenario scenario.yaml",
+    "test:fire": "cd fire-smoke-sensor && wokwi-cli . --timeout 30000 --scenario scenario.yaml",
+    "test": "npm run check && npm run compile && npm run test:network && npm run test:water && npm run test:fire"
+  }
+}
