@@ -1,0 +1,62 @@
+// CSRMS system architecture.
+// Render with: dot -Tpng architecture.dot -o architecture.png
+digraph architecture {
+  rankdir=TB;
+  splines=true;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, margin="0.18,0.1"];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  // Clients
+  subgraph cluster_clients {
+    label="Clients";
+    style="rounded,dashed";
+    color="#999999";
+    student [label="Student", fillcolor="#e8f0f7"];
+    staff   [label="Staff", fillcolor="#e8f0f7"];
+    admin   [label="Admin", fillcolor="#e8f0f7"];
+    frontend [label="React frontend\n(login · dashboards · request forms)", fillcolor="#fdf3e3"];
+    student -> frontend;
+    staff -> frontend;
+    admin -> frontend;
+  }
+
+  // API services
+  subgraph cluster_api {
+    label="Django REST API  (JWT + role-based access)";
+    style="rounded";
+    color="#4a6b78";
+    bgcolor="#f2f6f7";
+    auth       [label="Auth service\n(JWT issue/refresh/blacklist)", fillcolor="#dce9ee"];
+    users      [label="User service\n(admin accounts)", fillcolor="#dce9ee"];
+    requests   [label="Request service\n(CRUD · status · assign · history)", fillcolor="#dce9ee"];
+    categories [label="Category service", fillcolor="#dce9ee"];
+    dashboard  [label="Dashboard / reporting\n(counts · notifications)", fillcolor="#dce9ee"];
+    telemetry  [label="Telemetry service\n(device-key ingest · auto-request rules)", fillcolor="#fdebd7"];
+  }
+
+  database [label="Shared database\n(SQLite dev / MySQL deploy)\nusers · requests · history\ncategories · readings · notifications",
+            shape=cylinder, style=filled, fillcolor="#e5e5e5"];
+
+  // IoT devices
+  subgraph cluster_iot {
+    label="IoT sensors (Wokwi virtual ESP32)";
+    style="rounded,dashed";
+    color="#a06a28";
+    net   [label="Network monitor\n(every 5 min)", fillcolor="#fbe7cf"];
+    water [label="Water leak sensor\n(every 2 min)", fillcolor="#fbe7cf"];
+    fire  [label="Fire/smoke sensor\n(continuous)", fillcolor="#fbe7cf"];
+  }
+
+  frontend -> auth [label="HTTPS / JSON"];
+  frontend -> requests [lhead=cluster_api, label="Bearer JWT"];
+  net   -> telemetry [label="X-Device-Key"];
+  water -> telemetry [label="X-Device-Key"];
+  fire  -> telemetry [label="X-Device-Key"];
+
+  auth -> database;
+  users -> database;
+  requests -> database;
+  categories -> database;
+  dashboard -> database;
+  telemetry -> database [label="readings +\nauto-created requests"];
+}

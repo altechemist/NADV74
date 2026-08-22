@@ -1,0 +1,60 @@
+// CSRMS data flow: the manual student-reported flow and the automatic
+// IoT-triggered flow meet in one request pipeline.
+// Render with: dot -Tpng dataflow.dot -o dataflow.png
+digraph dataflow {
+  rankdir=TB;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, margin="0.18,0.1"];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  // Manual flow (left)
+  subgraph cluster_manual {
+    label="Manual flow (student report)";
+    style="rounded";
+    color="#4a6b78";
+    bgcolor="#f2f6f7";
+    login     [label="Student logs in\n(JWT access + refresh)", fillcolor="#dce9ee"];
+    submit    [label="Submits request\n(category · title · description ·\npriority · location)", fillcolor="#dce9ee"];
+    validate  [label="API validates input\nsaves as PENDING\nlogs first history entry", fillcolor="#fdf3e3"];
+    login -> submit -> validate;
+  }
+
+  // Automatic flow (right)
+  subgraph cluster_auto {
+    label="Automatic flow (IoT sensors)";
+    style="rounded";
+    color="#a06a28";
+    bgcolor="#fdf7ef";
+    net   [label="Network monitor\nPOST /telemetry/network/\nevery 5 min", fillcolor="#fbe7cf"];
+    water [label="Water leak sensor\nPOST /telemetry/water/\nevery 2 min", fillcolor="#fbe7cf"];
+    fire  [label="Fire/smoke sensor\nPOST /telemetry/fire/\ncontinuous", fillcolor="#fbe7cf"];
+
+    rules [label="Auto-request rules\n3 failed pings → IT Support / HIGH\nmoisture over threshold → Facilities / HIGH\nsmoke or temp breach → Safety / CRITICAL",
+           shape=note, fillcolor="#fdebd7"];
+    auto  [label="SYSTEM request created\n(source = SYSTEM, deduplicated,\nadmins notified)", shape=note, fillcolor="#fdebd7"];
+
+    net   -> rules;
+    water -> rules;
+    fire  -> rules;
+    rules -> auto;
+  }
+
+  // Shared pipeline
+  queue   [label="Staff worklist\nfilter by status · priority · category", fillcolor="#e8f0f7"];
+  assign  [label="ASSIGNED\nstaff member takes the ticket", fillcolor="#e8f0f7"];
+  progress [label="IN_PROGRESS", fillcolor="#e8f0f7"];
+  resolved [label="RESOLVED", fillcolor="#e3f0e5"];
+  history [label="Every change logged to history\n(timestamp + comment)", shape=note, fillcolor="#fdf3e3"];
+  student_view [label="Student tracks progress\nvia full history", fillcolor="#e8f0f7"];
+
+  validate -> queue;
+  auto -> queue;
+
+  queue -> assign [label="assign"];
+  assign -> progress [label="start work"];
+  progress -> resolved [label="fix verified"];
+
+  assign -> history [style=dashed, arrowhead=none];
+  progress -> history [style=dashed, arrowhead=none];
+  resolved -> history [style=dashed, arrowhead=none];
+  history -> student_view [label="GET /requests/{id}/history/"];
+}

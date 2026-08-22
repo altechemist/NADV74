@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/*
+ * CSRMS palette. Defining the colours here means components can use plain
+ * utility names (bg-paper, text-deep, ...) instead of repeating hex codes.
+ */
+@theme {
+  --color-paper: #f5f0e8;
+  --color-card: #fbf8f3;
+  --color-line: #ded5c8;
+  --color-ink: #182b35;
+  --color-deep: #102a35;
+  --color-teal: #173d48;
+  --color-accent: #e6a649;
+  --color-muted: #718083;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+}
+
+/* Small uppercase label used above section headings. */
+.signal-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9a7950;
+}

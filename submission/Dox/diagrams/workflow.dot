@@ -1,0 +1,30 @@
+// CSRMS request lifecycle (state machine as enforced by apps/requests/services.py).
+// Render with: dot -Tpng workflow.dot -o workflow.png
+digraph workflow {
+  rankdir=TB;
+  splines=true;
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, margin="0.18,0.1"];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  start [label="raised\n(student form or IoT rule)", shape=point, style=filled, fillcolor="#333333", width=0.12];
+
+  pending [label="PENDING\nawaiting triage", fillcolor="#fdf3e3"];
+  assigned [label="ASSIGNED\nowner picked", fillcolor="#e8f0f7"];
+  inprog [label="IN_PROGRESS\nwork under way", fillcolor="#dce9ee"];
+  resolved [label="RESOLVED\nterminal · closes dedupe window", shape=doublecircle, style="filled", fillcolor="#dff0dd", margin="0.1,0.06"];
+  cancelled [label="CANCELLED\nterminal · keeps history", shape=doublecircle, style="filled", fillcolor="#f2dede", margin="0.1,0.06"];
+
+  start -> pending;
+
+  pending -> assigned [label="assign — staff / admin"];
+  assigned -> inprog [label="start work — assignee / admin"];
+  inprog -> resolved [label="resolve — assignee / staff / admin"];
+
+  pending -> cancelled [label="cancel — owner while open / admin", style=dashed];
+  assigned -> cancelled [style=dashed];
+  inprog -> cancelled [style=dashed];
+
+  // Every transition is written to RequestHistory with timestamp + actor.
+  note [label="each arrow writes a RequestHistory entry\n(timestamp · actor · comment)", shape=note, style=filled, fillcolor="#fffbe8", fontsize=9, fontname="Helvetica-Oblique"];
+  assigned -> note [arrowhead=none, style=invis];
+}

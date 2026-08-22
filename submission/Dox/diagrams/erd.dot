@@ -1,0 +1,95 @@
+// CSRMS database schema (entity-relationship view).
+// Render with: dot -Tpng erd.dot -o erd.png
+digraph erd {
+  rankdir=TB;
+  splines=true;
+  node [shape=plain, fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  // Entity tables: header row + key fields. PK rows bold, FK rows italic.
+  user [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#dce9ee"><b>User</b></td></tr>
+    <tr><td align="left"><b>id&#160;&#160;PK</b></td></tr>
+    <tr><td align="left">username (unique)</td></tr>
+    <tr><td align="left">email · name</td></tr>
+    <tr><td align="left"><b>role:</b> STUDENT / STAFF / ADMIN</td></tr>
+    <tr><td align="left">is_active</td></tr>
+    <tr><td align="left">password (PBKDF2)</td></tr>
+  </table>>];
+
+  category [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#dce9ee"><b>Category</b></td></tr>
+    <tr><td align="left"><b>id&#160;&#160;PK</b></td></tr>
+    <tr><td align="left">name (unique)</td></tr>
+    <tr><td align="left">active</td></tr>
+  </table>>];
+
+  request [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#fdebd7"><b>ServiceRequest</b></td></tr>
+    <tr><td port="preq" align="left"><b>id&#160;&#160;PK</b> · reference (unique, CSR-####)</td></tr>
+    <tr><td align="left">title · description · location</td></tr>
+    <tr><td align="left"><b>priority:</b> LOW..CRITICAL</td></tr>
+    <tr><td align="left"><b>status:</b> PENDING → RESOLVED / CANCELLED</td></tr>
+    <tr><td align="left"><b>source:</b> USER / SYSTEM</td></tr>
+    <tr><td align="left">dedupe_key (SYSTEM tickets)</td></tr>
+    <tr><td align="left">created_at · updated_at</td></tr>
+    <tr><td port="cat" align="left"><i>category_id FK → Category</i></td></tr>
+    <tr><td port="cby" align="left"><i>created_by FK → User</i></td></tr>
+    <tr><td port="ato" align="left"><i>assigned_to FK → User (nullable)</i></td></tr>
+  </table>>];
+
+  history [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#e5e5e5"><b>RequestHistory</b></td></tr>
+    <tr><td align="left"><b>id&#160;&#160;PK</b></td></tr>
+    <tr><td align="left"><b>entry_type:</b> CREATED / STATUS /<br/>ASSIGN / COMMENT</td></tr>
+    <tr><td align="left">from_status · to_status · comment</td></tr>
+    <tr><td align="left">created_at</td></tr>
+    <tr><td port="preq" align="left"><i>request_id FK → ServiceRequest (cascade)</i></td></tr>
+    <tr><td port="cby" align="left"><i>changed_by FK → User (nullable)</i></td></tr>
+  </table>>];
+
+  notification [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#e5e5e5"><b>Notification</b></td></tr>
+    <tr><td align="left"><b>id&#160;&#160;PK</b> · title · message</td></tr>
+    <tr><td align="left">is_read</td></tr>
+    <tr><td align="left">created_at</td></tr>
+    <tr><td port="usr" align="left"><i>user_id FK → User (recipient)</i></td></tr>
+  </table>>];
+
+  devicekey [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#fdebd7"><b>DeviceKey</b></td></tr>
+    <tr><td align="left"><b>id&#160;&#160;PK</b> · name</td></tr>
+    <tr><td align="left"><b>device_type:</b> NETWORK / WATER / FIRE</td></tr>
+    <tr><td port="pkey" align="left">key_hash (unique — raw key never stored)</td></tr>
+    <tr><td align="left">is_revoked · last_used_at</td></tr>
+  </table>>];
+
+  reading [label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td bgcolor="#fdebd7"><b>TelemetryReading</b></td></tr>
+    <tr><td align="left"><b>id&#160;&#160;PK</b></td></tr>
+    <tr><td align="left"><b>sensor_type:</b> NETWORK / WATER / FIRE</td></tr>
+    <tr><td align="left">value · secondary_value (temp °C)</td></tr>
+    <tr><td align="left">reachable · location · device_id</td></tr>
+    <tr><td align="left">recorded_at</td></tr>
+    <tr><td port="pkey" align="left"><i>posted_by FK → DeviceKey (set null)</i></td></tr>
+  </table>>];
+
+  // Relationships
+  category -> request:cat [arrowhead=crow, label=" classifies\n (PROTECT)"];
+  user -> request:cby [arrowhead=crow, label=" raises / is assigned"];
+  request:preq -> history:preq [arrowhead=crow, label=" full audit trail"];
+  user -> history:cby [arrowhead=crow, style=dashed, label=" actor"];
+  user -> notification:usr [arrowhead=crow, label=" recipient"];
+  devicekey:pkey -> reading:pkey [arrowhead=crow, label=" ingests"];
+
+  // Visual grouping: campus side vs IoT side
+  subgraph cluster_iot {
+    label="IoT ingest (device-key auth)";
+    style="rounded,dashed";
+    color="#999999";
+    fontsize=10;
+    devicekey; reading;
+  }
+
+  { rank=same; user; category; }
+}

@@ -7,12 +7,12 @@ date: "August 2026"
 
 # Cover details
 
-| | |
-|---|---|
-| **Module** | NADV 744 — Advanced Development Systems |
-| **Assessment** | Group Assignment 2026 (100 marks) |
-| **Institution** | Sol Plaatje University, Northern Cape |
-| **Due date** | 24 August 2026 |
+|                 |                                         |
+| --------------- | --------------------------------------- |
+| **Module**      | NADV 744 — Advanced Development Systems |
+| **Assessment**  | Group Assignment 2026 (100 marks)       |
+| **Institution** | Sol Plaatje University, Northern Cape   |
+| **Due date**    | 24 August 2026                          |
 
 > **Team members**
 >
@@ -41,8 +41,8 @@ unnoticed because nobody happens to walk past it.
 The consequences are familiar to everyone on campus. IT support hears about network
 outages from students on social media before it hears about them through any official
 channel. Maintenance backlogs are invisible until something fails completely. Nobody can
-answer the basic management question: *how many problems were reported this month, how
-long did they take to fix, and where are the worst buildings?*
+answer the basic management question: _how many problems were reported this month, how
+long did they take to fix, and where are the worst buildings?_
 
 There is also a class of problem that should never depend on a human noticing anything.
 A leaking pipe does not wait for business hours. A server room that starts overheating at
@@ -123,7 +123,7 @@ The system has four cooperating services:
   JWT), `requests` (categories, requests, history, notifications), `telemetry` (device
   keys, readings, auto-request rules) and `dashboard` (aggregated counters).
 - **Telemetry ingest** — technically part of the API but logically separate: it
-  authenticates *devices*, not users, using per-device keys.
+  authenticates _devices_, not users, using per-device keys.
 - **Simulated sensors** — three ESP32 programs running in Wokwi, each posting readings on
   its own schedule over plain HTTP.
 
@@ -164,15 +164,15 @@ comment in `RequestHistory`.
 The complete table lives in the repository (`docs/context`, Postman collection); the
 families are:
 
-| Family | Endpoints | Access |
-|---|---|---|
-| Auth | register · login · refresh · logout · me | public / authenticated |
-| Users | list · create · patch · deactivate (admin) · assignable-staff directory for the request drawer | admin / staff |
-| Categories | list · create | authenticated / admin |
-| Requests | CRUD · assign · status · comment · history | owner, staff or admin per object |
-| Notifications | list · mark read | recipient only |
-| Dashboard | role-scoped counters | any authenticated role |
-| Telemetry | `/network/` `/water/` `/fire/` ingest + history | device key (never a user JWT) |
+| Family        | Endpoints                                                                                      | Access                           |
+| ------------- | ---------------------------------------------------------------------------------------------- | -------------------------------- |
+| Auth          | register · login · refresh · logout · me                                                       | public / authenticated           |
+| Users         | list · create · patch · deactivate (admin) · assignable-staff directory for the request drawer | admin / staff                    |
+| Categories    | list · create                                                                                  | authenticated / admin            |
+| Requests      | CRUD · assign · status · comment · history                                                     | owner, staff or admin per object |
+| Notifications | list · mark read                                                                               | recipient only                   |
+| Dashboard     | role-scoped counters                                                                           | any authenticated role           |
+| Telemetry     | `/network/` `/water/` `/fire/` ingest + history                                                | device key (never a user JWT)    |
 
 ## 2.6 Security design
 
@@ -181,9 +181,9 @@ Security decisions were made up front and enforced in code, not policy documents
 - **JWT everywhere.** Every endpoint requires a bearer token except registration, login
   and refresh. Refresh tokens rotate and are blacklisted on logout.
 - **Roles:** STUDENT, STAFF, ADMIN. Registration always creates a STUDENT account
-  *server-side* — a client cannot elevate itself by posting `"role": "ADMIN"`.
-- **Object-level checks.** Permission classes verify not just *can this role call this
-  endpoint* but *may this user touch this specific row*. A student who guesses another
+  _server-side_ — a client cannot elevate itself by posting `"role": "ADMIN"`.
+- **Object-level checks.** Permission classes verify not just _can this role call this
+  endpoint_ but _may this user touch this specific row_. A student who guesses another
   student's request ID receives a 404, and the test suite proves it.
 - **Device keys are not passwords.** Each sensor gets its own random key; only its SHA-256
   hash is stored, keys are bound to one sensor type each, and any key can be revoked
@@ -194,17 +194,15 @@ Security decisions were made up front and enforced in code, not policy documents
 
 ## 2.7 IoT auto-request rules
 
-| Sensor | Cadence | Rule | Request raised |
-|---|---|---|---|
-| Network monitor | 5 min | 3 consecutive failed gateway pings | IT Support · HIGH |
-| Water leak | 2 min | moisture above 60% (configurable) | Facilities · HIGH |
-| Fire/smoke | 10 s | smoke ≥ 40 or temperature ≥ 50 °C | Safety · CRITICAL |
+| Sensor          | Cadence | Rule                               | Request raised    |
+| --------------- | ------- | ---------------------------------- | ----------------- |
+| Network monitor | 5 min   | 3 consecutive failed gateway pings | IT Support · HIGH |
+| Water leak      | 2 min   | moisture above 60% (configurable)  | Facilities · HIGH |
+| Fire/smoke      | 10 s    | smoke ≥ 40 or temperature ≥ 50 °C  | Safety · CRITICAL |
 
 Thresholds come from environment variables rather than code, and open SYSTEM tickets are
 deduplicated per sensor and location: a sensor that keeps tripping raises one ticket, not
 one hundred. A new ticket appears only after the previous one is resolved or cancelled.
-
-\newpage
 
 # 3. Implementation
 
@@ -256,21 +254,19 @@ feature work merged directly to `main` and kept runnable. Generated artefacts (v
 build output, node modules, the SQLite file) are excluded by a curated `.gitignore`;
 environment templates ship as `.env.example`.
 
-\newpage
-
 # 4. Testing and evaluation
 
 ## 4.1 Test plan and unit tests
 
 The full plan is documented in `docs/testing/test-plan.md`; the headline numbers:
 
-| Suite | Tests | Covers |
-|---|---|---|
-| Accounts | 16 | registration forcing STUDENT, password hashing, token lifecycle, admin user management, staff directory scoping |
-| Requests | 22 | visibility scoping, workflow transitions, history, comments, editing/cancellation rules |
-| Telemetry | 19 | device-key auth (missing/unknown/revoked/wrong-type), all three auto-request rules, dedupe |
-| Dashboard | 4 | role-scoped counters, notification privacy |
-| **Total** | **61** | all passing under `python manage.py test` |
+| Suite     | Tests  | Covers                                                                                                          |
+| --------- | ------ | --------------------------------------------------------------------------------------------------------------- |
+| Accounts  | 16     | registration forcing STUDENT, password hashing, token lifecycle, admin user management, staff directory scoping |
+| Requests  | 22     | visibility scoping, workflow transitions, history, comments, editing/cancellation rules                         |
+| Telemetry | 19     | device-key auth (missing/unknown/revoked/wrong-type), all three auto-request rules, dedupe                      |
+| Dashboard | 4      | role-scoped counters, notification privacy                                                                      |
+| **Total** | **61** | all passing under `python manage.py test`                                                                       |
 
 Every security claim made in section 2.4 has at least one negative test trying to break
 it. Two examples: `test_student_cannot_read_another_students_request_by_id` and
@@ -292,13 +288,13 @@ evidence in this report regenerates itself whenever the UI changes.
 Using `tools/perf_check.py` (50 timed requests per endpoint against a seeded local
 server):
 
-| Endpoint | Mean | p95 | Max |
-|---|---|---|---|
-| `/api/requests/` | 4.8 ms | 7.4 ms | 8.4 ms |
-| `/api/dashboard/` | 4.7 ms | 5.9 ms | 6.6 ms |
+| Endpoint              | Mean   | p95    | Max    |
+| --------------------- | ------ | ------ | ------ |
+| `/api/requests/`      | 4.8 ms | 7.4 ms | 8.4 ms |
+| `/api/dashboard/`     | 4.7 ms | 5.9 ms | 6.6 ms |
 | `/api/notifications/` | 3.7 ms | 5.0 ms | 7.5 ms |
-| `/api/categories/` | 4.1 ms | 5.9 ms | 9.5 ms |
-| `/api/users/` | 4.6 ms | 6.5 ms | 8.1 ms |
+| `/api/categories/`    | 4.1 ms | 5.9 ms | 9.5 ms |
+| `/api/users/`         | 4.6 ms | 6.5 ms | 8.1 ms |
 
 Three findings matter more than the absolute numbers. First, JWT verification is local and
 cryptographic — it never queries the database — so per-request authorisation cost stays
@@ -321,8 +317,6 @@ modal) are committed under `docs/screenshots/` and referenced in the demo script
 recorded walkthrough of the full workflow — student report, staff triage, simulated
 sensors raising a SYSTEM ticket — is committed as `docs/demo/assets/csrms-demo.mp4` and
 embedded in the slide deck.
-
-\newpage
 
 # 5. Results and discussion
 

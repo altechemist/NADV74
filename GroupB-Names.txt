@@ -1,0 +1,10 @@
+Name and Surname Student Number
+
+Karabelo Nthoroane 202328762
+Khulani Hlebeya 202302091
+Kegomoditswe Mongale 201718863
+Metswi kabo 202104098
+
+Link to FORKED git repo:
+
+https://github.com/altechemist/NADV74
