@@ -142,6 +142,20 @@ class UserManagementTests(APITestCase):
             response = self.client.get(USERS_URL)
             self.assertEqual(response.status_code, expected)
 
+    def test_staff_directory_serves_assignable_accounts(self):
+        """Staff need the assignable names for the request drawer, but never
+        the full user directory."""
+        self.authenticate(self.staff)
+        response = self.client.get(f"{USERS_URL}staff/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        roles = {entry["role"] for entry in response.data}
+        self.assertEqual(roles, {"STAFF", "ADMIN"})
+
+    def test_student_cannot_read_staff_directory(self):
+        self.authenticate(self.student)
+        response = self.client.get(f"{USERS_URL}staff/")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_admin_can_create_staff_account(self):
         self.authenticate(self.admin)
         response = self.client.post(

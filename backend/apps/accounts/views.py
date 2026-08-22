@@ -8,7 +8,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from apps.core.permissions import IsAdmin
+from apps.core.permissions import IsAdmin, IsStaffOrAdmin
 
 from .models import User
 from .serializers import (
@@ -76,6 +76,20 @@ class MeView(APIView):
 
     def patch(self, request):
         return self.put(request)
+
+
+class StaffDirectoryView(generics.ListAPIView):
+    """
+    Slim directory of assignable accounts for the request drawer. Staff may
+    see who they can hand a ticket to; the full user directory stays
+    admin-only.
+    """
+
+    serializer_class = UserSerializer
+    permission_classes = [IsStaffOrAdmin]
+
+    def get_queryset(self):
+        return User.objects.filter(is_active=True, role__in=[User.Role.STAFF, User.Role.ADMIN]).order_by("username")
 
 
 class UserViewSet(viewsets.ModelViewSet):

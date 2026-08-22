@@ -41,13 +41,13 @@ export default function RequestDetail({ requestId, onClose, onChanged }) {
       .then((data) => active && setHistory(data))
       .catch(() => {});
 
-    // Staff pick a colleague from the admin user list.
+    // Staff pick a colleague from the assignable-accounts directory.
     if (isStaffUser) {
       api
-        .users()
+        .staffDirectory()
         .then((users) => {
           if (!active) return;
-          setStaffList(users.filter((candidate) => candidate.role !== "STUDENT"));
+          setStaffList(users);
         })
         .catch(() => {});
     }

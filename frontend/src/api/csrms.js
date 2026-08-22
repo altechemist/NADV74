@@ -14,6 +14,7 @@ export const api = {
 
   // Users (admin)
   users: () => request("/users/"),
+  staffDirectory: () => request("/users/staff/"),
   createUser: (payload) => request("/users/", { method: "POST", body: JSON.stringify(payload) }),
   deactivateUser: (id) => request(`/users/${id}/`, { method: "DELETE" }),
 
