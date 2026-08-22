@@ -1,7 +1,7 @@
 # CSRMS — Test Plan and Results
 
 Module: NADV 744 Group Assignment 2026
-Last run: 21 August 2026 — **59 tests, all passing** (`python manage.py test`, Django 6 / Python 3.14)
+Last run: 22 August 2026 — **61 tests, all passing** (`python manage.py test`, Django 6 / Python 3.14)
 
 ## 1. Scope and objectives
 
@@ -98,7 +98,7 @@ Defects found during development were fixed and pinned with a regression test be
 ## 7. How to reproduce
 
 ```sh
-cd backend && python manage.py test          # 59 API/service tests
+cd backend && python manage.py test          # 61 API/service tests
 cd iot && npm run check                      # structural firmware checks
 cd iot && npm run test                       # full Wokwi simulation scenarios*
 node tools/screenshots.mjs                   # end-to-end browser walkthrough*

@@ -66,7 +66,7 @@ device key into `DEVICE_KEY`, point `API_URL` at your machine's LAN IP, compile 
 ### 4. Tests
 
 ```sh
-cd backend && python manage.py test     # 59 automated tests across all services
+cd backend && python manage.py test     # 61 automated tests across all services
 cd iot && npm run check                 # firmware structural checks (no tooling needed)
 node tools/screenshots.mjs              # end-to-end browser walkthrough (needs dev servers)
 python3 tools/perf_check.py --n 50      # latency probe against a running API

@@ -129,6 +129,14 @@ Next, in order:
 
 ---
 
+# One workflow, recorded end to end
+
+<video src="assets/csrms-demo.mp4" controls muted style="width: 100%; max-height: 78vh; border-radius: 12px;"></video>
+
+Student report → staff triage → simulated sensor trips → SYSTEM ticket. Same file: `docs/demo/assets/csrms-demo.mp4`
+
+---
+
 <!-- _class: lead -->
 
 # Thank you

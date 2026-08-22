@@ -141,7 +141,7 @@ families are:
 | Family | Endpoints | Access |
 |---|---|---|
 | Auth | register · login · refresh · logout · me | public / authenticated |
-| Users | list · create · patch · deactivate | admin only |
+| Users | list · create · patch · deactivate (admin) · assignable-staff directory for the request drawer | admin / staff |
 | Categories | list · create | authenticated / admin |
 | Requests | CRUD · assign · status · comment · history | owner, staff or admin per object |
 | Notifications | list · mark read | recipient only |
@@ -240,11 +240,11 @@ The full plan is documented in `docs/testing/test-plan.md`; the headline numbers
 
 | Suite | Tests | Covers |
 |---|---|---|
-| Accounts | 14 | registration forcing STUDENT, password hashing, token lifecycle, admin user management |
+| Accounts | 16 | registration forcing STUDENT, password hashing, token lifecycle, admin user management, staff directory scoping |
 | Requests | 22 | visibility scoping, workflow transitions, history, comments, editing/cancellation rules |
 | Telemetry | 19 | device-key auth (missing/unknown/revoked/wrong-type), all three auto-request rules, dedupe |
 | Dashboard | 4 | role-scoped counters, notification privacy |
-| **Total** | **59** | all passing under `python manage.py test` |
+| **Total** | **61** | all passing under `python manage.py test` |
 
 Every security claim made in section 2.4 has at least one negative test trying to break
 it. Two examples: `test_student_cannot_read_another_students_request_by_id` and
@@ -291,7 +291,10 @@ indexed by hash, so telemetry ingest cost does not grow with fleet size.
 ![Sensor activity charts built from twelve hours of stored telemetry](../docs/screenshots/07-sensor-charts.png)
 
 Further captures (registration, notifications, admin user management, the new-request
-modal) are committed under `docs/screenshots/` and referenced in the demo script.
+modal) are committed under `docs/screenshots/` and referenced in the demo script. A short
+recorded walkthrough of the full workflow — student report, staff triage, simulated
+sensors raising a SYSTEM ticket — is committed as `docs/demo/assets/csrms-demo.mp4` and
+embedded in the slide deck.
 
 \newpage
 
@@ -306,7 +309,7 @@ Against the objectives set in section 1.3:
    management.
 3. **Simulated IoT** — delivered: three devices post on their own schedules and raise
    tickets through the same workflow as humans, with dedupe keeping the queue honest.
-4. **Automated tests** — delivered: 59 API/service tests plus firmware scenarios plus a
+4. **Automated tests** — delivered: 61 API/service tests plus firmware scenarios plus a
    browser-level smoke test.
 5. **Documentation** — delivered: README quick-start, IoT guide, test plan, performance
    results, diagrams and this report.
@@ -369,7 +372,7 @@ python manage.py migrate && python manage.py seed_demo && python manage.py runse
 cd frontend && npm install && cp .env.example .env && npm run dev   # :3000
 
 # Tests
-cd backend && python manage.py test        # 59 tests
+cd backend && python manage.py test        # 61 tests
 cd iot && npm run check                    # firmware structural checks
 node tools/screenshots.mjs                 # end-to-end browser walkthrough
 ```
