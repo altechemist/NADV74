@@ -1,0 +1,62 @@
+// CSRMS use cases per actor.
+// Render with: dot -Tpng usecases.dot -o usecases.png
+digraph usecases {
+  rankdir=LR;
+  splines=true;
+  node [fontname="Helvetica", fontsize=10];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  // Actors
+  node [shape=box, style="rounded,filled", fillcolor="#e8f0f7", margin="0.18,0.1"];
+  student [label="Student"];
+  staff [label="Staff"];
+  admin [label="Admin"];
+  device [label="IoT device\n(Wokwi ESP32)", fillcolor="#fdebd7"];
+
+  // Use cases
+  node [shape=ellipse, style="filled", fillcolor="#fdf3e3", margin="0.1,0.04"];
+  register [label="register / login (JWT)"];
+  submit [label="submit service request"];
+  trackown [label="track · edit · cancel own request"];
+  notify [label="read notifications"];
+  mydash [label="personal dashboard"];
+
+  queue [label="triage request queue", fillcolor="#dce9ee"];
+  assign [label="assign owner", fillcolor="#dce9ee"];
+  status [label="drive status workflow", fillcolor="#dce9ee"];
+  comment [label="comment on history", fillcolor="#dce9ee"];
+
+  users [label="manage user accounts\n(create · deactivate)", fillcolor="#e5e5e5"];
+  cats [label="manage categories", fillcolor="#e5e5e5"];
+  keys [label="issue · revoke device keys", fillcolor="#e5e5e5"];
+
+  ingest [label="post telemetry readings\n(X-Device-Key)", fillcolor="#fdebd7"];
+  autoticket [label="trigger SYSTEM request\non threshold breach", fillcolor="#fdebd7"];
+
+  // Student
+  student -> register;
+  student -> submit;
+  student -> trackown;
+  student -> notify;
+  student -> mydash;
+
+  // Staff
+  staff -> register;
+  staff -> queue;
+  staff -> assign;
+  staff -> status;
+  staff -> comment;
+  staff -> mydash;
+
+  // Admin: own duties plus everything staff can do
+  admin -> users;
+  admin -> cats;
+  admin -> keys;
+  admin -> staff [style=dashed, arrowhead=none, label="inherits all staff abilities"];
+
+  // IoT device
+  device -> ingest;
+  ingest -> autoticket [label="threshold crossed"];
+
+  { rank=same; student; staff; }
+}

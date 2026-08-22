@@ -22,7 +22,10 @@ style: |
 NADV 744 · Advanced Development Systems · Group Assignment 2026
 Sol Plaatje University
 
-*(team names + student numbers)*
+Karabelo Nthoroane · 202328762<br>
+Khulani Hlebeya · 202302091<br>
+Kegomoditswe Mongale · 201718863<br>
+Metswi kabo · 202104098
 
 ---
 
@@ -56,6 +59,16 @@ Every path — student report or sensor reading — ends in the same audited wor
 
 ---
 
+# Security evidence
+
+- Deliberate wrong-password login returns **HTTP 401** and grants no session
+- A valid login returns JWT access and refresh tokens
+- Students cannot read another student's request, even with a guessed ID
+- A user JWT cannot post telemetry; sensors require a type-bound `X-Device-Key`
+- Postman provides a visible API fallback for login, telemetry, and deduplication
+
+---
+
 # Security model
 
 | Layer | Decision |
@@ -78,6 +91,9 @@ Every path — student report or sensor reading — ends in the same audited wor
 
 Open SYSTEM tickets are **deduplicated** per sensor+location — a stuck sensor
 raises one ticket, not a hundred.
+
+Network, water, and fire/smoke triggers are verified by the backend tests and can be
+demonstrated live or through Postman when Wokwi or the network is unavailable.
 
 ---
 
@@ -109,9 +125,10 @@ raises one ticket, not a hundred.
 
 # Testing & evaluation
 
-- **59 automated API/service tests** — every security claim has a negative test
+- **61 automated API/service tests** — every security claim has a negative test
 - Firmware: structural validation + Wokwi scenarios driving sensors to their limits
 - Playwright walkthrough of all three roles doubles as the screenshot generator
+- Postman collection covers the API as a manual demonstration and fallback
 - Performance (50 rounds/endpoint): **p95 under 8 ms** on all reads;
   JWT checks are DB-free, lists are paginated
 

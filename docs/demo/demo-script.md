@@ -14,8 +14,17 @@ enough to talk while clicking.
    pointed at your LAN IP.
 5. Postman open with the collection imported (fallback if the network misbehaves).
 6. Terminal spare, in `backend/`, for `manage.py shell` moments.
+7. Have the Postman collection and environment imported for API evidence.
 
 Credentials: `naledi` (student) · `lerato` (staff) · `admin` (password `Campus#2026`).
+
+## Security checkpoint · ~45 seconds
+
+Before the successful student login, enter the correct username with an intentionally wrong
+password. Show the failed request as **HTTP 401**, the error on screen, and that no dashboard
+session is created. Then sign in successfully and explain that the same JWT boundary protects
+the rest of the API. In Postman, repeat the failed login and then use the successful access
+token for an authenticated request.
 
 ## Act 1 — The problem becomes a ticket (student) · ~2 min
 
@@ -52,16 +61,31 @@ the seed command *and* the IoT rules — there is no side door.
 5. Post another high reading: *no duplicate ticket* — explain dedupe keys.
 6. If time allows: fire sensor DHT22 slider past 50 °C → CRITICAL Safety ticket.
 
+The third trigger is the network monitor: three consecutive failed gateway pings create an
+IT Support / HIGH SYSTEM ticket. Demonstrate it with the Wokwi network project or the
+Postman `POST /telemetry/network/` request when time or connectivity is limited.
+
 Talking point: device keys are hashed at rest, bound to one endpoint each, and
 revocable individually. A user JWT is worthless here — the test suite proves it.
 
-## Act 4 — Administration and evidence · ~1.5 min
+## Act 4 — Postman and automated evidence · ~1.5 min
+
+1. In Postman, show a successful login, the failed-login 401 response, and a water or fire
+   telemetry request carrying `X-Device-Key`.
+2. Send a second threshold-breaching telemetry reading. Show that the response does not
+   create a second open SYSTEM ticket because the dedupe key is already active.
+3. Run `python manage.py test` and show the **61 passing tests**, including wrong-password,
+   object-visibility, JWT/device-key separation, all three sensor rules and deduplication.
+4. Run `cd iot && python3 test/validate_sketches.py` to show all three simulation projects
+   pass structural validation.
+
+## Act 5 — Administration and evidence · ~1 min
 
 1. Log in as **admin**, show **People** (create/deactivate accounts) and campus-wide
    dashboard counters.
 2. Show the GitHub repo briefly: commit history, README quick-start, test plan,
    performance results.
-3. Close with the numbers: **59 passing tests**, p95 under 8 ms on all reads,
+3. Close with the numbers: **61 passing tests**, p95 under 8 ms on all reads,
    three automated firmware scenarios.
 
 ## Likely questions (and short answers)

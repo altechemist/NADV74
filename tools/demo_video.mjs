@@ -98,8 +98,14 @@ async function main() {
   await caption("Campus problems, one service desk.");
   await pause(1600);
 
-  await caption("Students sign in and see only their own requests.");
+  await caption("A wrong password is rejected with HTTP 401 - no session is created.");
   await page.getByLabel("Username").fill("naledi");
+  await page.getByLabel("Password").fill("wrong-password");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByText(/invalid|incorrect|no active account|credentials/i).waitFor();
+  await pause(1000);
+
+  await caption("Students sign in and see only their own requests.");
   await page.getByLabel("Password").fill(PASSWORD);
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.getByText("workspace").first().waitFor();
@@ -189,7 +195,7 @@ async function main() {
 
   // --- end card -------------------------------------------------------------
   await page.goto(`${FRONTEND_URL}/login`, { waitUntil: "networkidle" });
-  await caption("CSRMS · 59 automated tests · p95 under 8 ms · built by team NADV74");
+  await caption("CSRMS · 61 automated tests · Postman + sensor evidence · p95 under 8 ms");
   await pause(2600);
 
   const targetWebm = resolve(OUT_DIR, "csrms-demo.webm");

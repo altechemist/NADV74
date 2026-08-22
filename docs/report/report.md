@@ -104,6 +104,13 @@ GitHub for version control. No physical hardware was required.
 
 # 2. System design
 
+![Use cases by Student, Staff, Admin and IoT device](../docs/diagrams/usecases.png)
+
+The use-case view identifies the four system actors. Students create and track their own
+requests and read notifications; staff manage the queue and request workflow; administrators
+manage users, categories and device keys; and IoT devices post authenticated telemetry that
+can trigger SYSTEM requests.
+
 ## 2.1 Architecture
 
 ![System architecture: three layers from simulated devices and browser clients down through the Django REST API to the database](../docs/diagrams/architecture.png)
@@ -133,7 +140,26 @@ no ticket for that same problem is already open — the API creates a request ma
 Staff assign, work and resolve; every transition is validated, logged and announced to the
 affected users.
 
-## 2.3 API endpoints
+## 2.3 Data model
+
+![Entity relationship diagram for users, requests, history, notifications and telemetry](../docs/diagrams/erd.png)
+
+The data model separates human accounts from device credentials. Categories use `PROTECT`
+so requests cannot retain an invalid category; request history uses `CASCADE` because it is
+the request's audit trail; and telemetry readings use `SET_NULL` for their optional device
+key reference. SYSTEM requests may have no human creator, while assignment remains nullable
+until staff take ownership.
+
+## 2.4 Request lifecycle
+
+![Request lifecycle state machine with actors and terminal states](../docs/diagrams/workflow.png)
+
+Requests move through `PENDING`, `ASSIGNED`, `IN_PROGRESS` and `RESOLVED` in the order
+enforced by `ALLOWED_TRANSITIONS`. `CANCELLED` is reachable from each open state, and both
+`RESOLVED` and `CANCELLED` are terminal. Each transition records its actor, timestamp and
+comment in `RequestHistory`.
+
+## 2.5 API endpoints
 
 The complete table lives in the repository (`docs/context`, Postman collection); the
 families are:
@@ -148,7 +174,7 @@ families are:
 | Dashboard | role-scoped counters | any authenticated role |
 | Telemetry | `/network/` `/water/` `/fire/` ingest + history | device key (never a user JWT) |
 
-## 2.4 Security design
+## 2.6 Security design
 
 Security decisions were made up front and enforced in code, not policy documents:
 
@@ -166,7 +192,7 @@ Security decisions were made up front and enforced in code, not policy documents
 - **Passwords** follow Django's validators (length, complexity, common-password checks)
   and are stored with PBKDF2.
 
-## 2.5 IoT auto-request rules
+## 2.7 IoT auto-request rules
 
 | Sensor | Cadence | Rule | Request raised |
 |---|---|---|---|
