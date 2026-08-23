@@ -14,15 +14,15 @@ date: "August 2026"
 | **Institution** | Sol Plaatje University, Northern Cape |
 | **Due date** | 24 August 2026 |
 
-> **Team members — fill in before submission:**
+> **Team members**
 >
 > | Full name | Student number | Contribution |
 > |---|---|---|
-> | *(name)* | *(number)* | Backend / API |
-> | *(name)* | *(number)* | Frontend |
-> | *(name)* | *(number)* | IoT simulations |
-> | *(name)* | *(number)* | Testing and documentation |
-> | *(name)* | *(number)* | Report and demo preparation |
+> | *(Karabelo Nthoroane)* | *(202328762)* | Backend / API |
+> | *(Khulani Hlebeya)* | *(202302091)* | Frontend |
+> | *(Metswi Kabo)* | *(202104098)* | IoT simulations |
+> | *(Kegomoditswe Mongale)* | *(201718863)* | Testing and documentation |
+> | *(Kegomoditswe Mongale)* | *(201718863)* | Report and demo preparation |
 
 \newpage
 
