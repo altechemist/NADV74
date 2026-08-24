@@ -6,6 +6,12 @@ CSRMS gives students one place to log campus problems, gives staff a proper work
 resolve them, gives administrators a full view of activity — and uses three simulated IoT sensors
 that raise requests on their own when the network goes down, a pipe leaks, or smoke/heat is detected.
 
+### Demo
+
+[![CSRMS Demo](../Demo/screenshots/02-student-overview.png)](../Demo/CSRMS_Demo.mp4)
+
+Click the image to watch the full walkthrough: student report, staff triage, sensor-triggered tickets.
+
 ## Repository layout
 
 | Folder              | Contents                                                                                                                   |
