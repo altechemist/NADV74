@@ -28,7 +28,7 @@ Khulani Hlebeya · 202302091<br>
 Kegomoditswe Mongale · 201718863<br>
 Metswi kabo · 202104098
 
-<!-- Good morning/afternoon. We are Group B presenting CSRMS — the Campus Service Request Management System. This project was built for NADV 744, Advanced Development Systems, as a group assignment. Our team of four covered backend, frontend, IoT simulations, testing, and documentation. CSRMS solves a real problem on campus: there is no centralised system for logging and tracking service requests, and some failures like water leaks or overheating go undetected until someone happens to notice. -->
+<!-- Four of us built CSRMS for this module. The problem: campus maintenance runs on WhatsApp and people bumping into each other in hallways. Nothing gets logged, so requests slip through. And some things — a leaking pipe at 2am, a server room overheating — nobody is around to report. We wanted one system that handles both. -->
 
 ---
 
@@ -40,7 +40,7 @@ Metswi kabo · 202104098
 - Some failures **should not depend on a human noticing** — leaks and overheating
   happen at 2am
 
-<!-- The core problem is that campus maintenance currently runs on WhatsApp messages and hallway conversations. Reports arrive without any structure — no category, no location, no assigned owner. Because nothing is written down, nobody can answer basic questions: how many open problems are there, how long does it take to fix them, which buildings have the most issues? Worse, some failures should not depend on a human noticing them. A dripping pipe in a residence or an early sign of smoke in a server room usually only gets reported once someone happens to see it — by which point damage may already be done. CSRMS addresses both sides: a place for students to log requests, and IoT sensors that raise tickets proactively. -->
+<!-- Picture this: a geyser bursts in a residence at midnight. Nobody is there to report it. By morning the damage is done. Or IT finds out about a network outage from students tweeting about it. Right now there is no structure — a student tells a lecturer, the lecturer sends a WhatsApp, maybe it gets forgotten. We wanted to fix that: give students a place to log things, and give sensors a way to speak up when nobody is watching. -->
 
 ---
 
@@ -53,7 +53,7 @@ One system, two ways in:
 
 ![w:1100](../diagrams/architecture.png)
 
-<!-- CSRMS is a layered system with a React frontend talking to a Django REST API. The API is organised into focused services: Auth, User, Request, Assignment, Category, Dashboard, and Telemetry. One shared database underpins everything. On the left you have the human flow — students log in, submit requests, staff assign and resolve them. On the right, three simulated IoT sensors — a network monitor, water leak sensor, and fire/smoke sensor — post readings to the same API. When thresholds are breached, the Telemetry service automatically creates a request in the same table staff already manage. The key architectural decision is that IoT devices are just another API client — not a separate system — so auto-created requests follow the exact same workflow as student reports. -->
+<!-- Look at the diagram. Left side is the human flow — students log in, submit requests, staff pick them up and work through the workflow. Right side is the IoT flow — three sensors post readings to the same API. When a threshold trips, the backend creates a ticket in the same table staff already look at. The important thing: sensors are not a separate system. They are just another API client. A sensor ticket follows the exact same path as a student report. -->
 
 ---
 
@@ -64,7 +64,7 @@ One system, two ways in:
 Every path — student report or sensor reading — ends in the same audited workflow:
 `PENDING → ASSIGNED → IN_PROGRESS → RESOLVED`
 
-<!-- This data flow diagram shows the two paths that feed the same request-handling pipeline. The manual flow starts with a student logging in and receiving a JWT token pair. They submit a request with a category, title, description, priority, and location. The API validates the input and saves the request with status PENDING, logging the creation as the first history entry. Staff then view open requests, filter by status or priority, assign the request to themselves or a colleague — moving it to ASSIGNED — and progress it through IN_PROGRESS to RESOLVED. Every status change is logged with a timestamp and comment. The automatic flow works identically: IoT sensors post readings with a device key, the backend evaluates thresholds, and if triggered, creates a request with source SYSTEM. From that moment it follows the same workflow — staff see it, assign it, resolve it, and it appears in the same history and dashboard views. -->
+<!-- Two ways in, same pipeline. Student logs in, gets a JWT, submits a request — API validates it, stamps it PENDING, writes the first history entry. Staff see it, assign it, work it, resolve it. Every change gets logged with a timestamp and a comment. Sensors do the same thing: post a reading with their device key, backend checks the rule, creates a SYSTEM request if the threshold is hit. From there, same workflow. -->
 
 ---
 
@@ -76,7 +76,7 @@ Every path — student report or sensor reading — ends in the same audited wor
 - A user JWT cannot post telemetry; sensors require a type-bound `X-Device-Key`
 - Postman provides a visible API fallback for login, telemetry, and deduplication
 
-<!-- Security is a core, examinable concept in this module, and we can prove every claim. First: enter the correct username with a deliberately wrong password — the API returns HTTP 401 and no session is created. A valid login returns a JWT access token and refresh token pair. The access token is required for every subsequent request. Students cannot read another student's request, even if they guess the request ID — the object-level permission returns a 404. A user JWT is worthless for posting telemetry; sensors require a separate per-device key sent via the X-Device-Key header. We will demonstrate all of this live, and the Postman collection provides a visible fallback if anything misbehaves. -->
+<!-- We can back up every security claim. Wrong password? 401, no session. Students can't see each other's tickets — guess an ID, you get 404. A user JWT is useless for posting sensor data; that needs a device key. We will demo all of this. Postman is there as a backup if the browser misbehaves. -->
 
 ---
 
@@ -90,7 +90,7 @@ Every path — student report or sensor reading — ends in the same audited wor
 | Devices   | Per-sensor keys, SHA-256 hashed, type-bound, individually revocable        |
 | Passwords | Django validators + PBKDF2                                                 |
 
-<!-- This table summarises the five security layers. Authentication uses JWT on every endpoint — only register, login, and refresh are public. Role-based access control defines three roles: STUDENT, STAFF, and ADMIN. Public registration always creates a STUDENT account server-side, regardless of what the form submits — you cannot self-elevate to admin. Object-level permissions ensure a student who guesses another student's request ID gets a 404, not the data — this is proven by a named test in the test suite. Device authentication uses per-sensor keys that are SHA-256 hashed at rest, bound to one sensor endpoint each, and individually revocable. Passwords are validated against Django's standard strength rules and hashed with PBKDF2. -->
+<!-- Five layers. JWT on everything except register and login. Three roles — and registration always makes a STUDENT account, no matter what you submit. Object permissions mean a student guessing IDs gets nothing. Device keys are hashed, bound to one sensor type, and you can revoke any key individually. Passwords use Django's validators plus PBKDF2. -->
 
 ---
 
@@ -108,7 +108,7 @@ raises one ticket, not a hundred.
 Network, water, and fire/smoke triggers are verified by the backend tests and can be
 demonstrated live or through Postman when Wokwi or the network is unavailable.
 
-<!-- The three IoT sensors each have distinct triggers. The network monitor runs every 5 minutes and pings the campus gateway — if it gets 3 consecutive failed pings, it raises an IT Support ticket at HIGH priority. The water leak sensor reports moisture levels every 2 minutes — if moisture exceeds the 60% threshold, a Facilities ticket is raised at HIGH priority. The fire/smoke sensor runs continuously — if smoke concentration reaches 40 or temperature hits 50 degrees Celsius, a Safety ticket is raised at CRITICAL priority. All thresholds are configurable via environment variables. A critical design feature is deduplication: open SYSTEM tickets are deduplicated by sensor and location, so a stuck sensor that keeps tripping raises only one open ticket, not a hundred. A new ticket is created only after the previous one is resolved or cancelled. All three triggers are verified by the automated test suite and can be demonstrated live with Wokwi or through Postman. -->
+<!-- Three sensors, three rules. Network monitor pings the gateway every 5 minutes — three fails in a row and it raises an IT Support ticket. Water leak checks moisture every 2 minutes — over 60% and Facilities gets a ticket. Fire sensor runs nonstop — smoke above 40 or temp above 50 Celsius, Safety ticket at CRITICAL. The trick is deduplication: if a sensor keeps tripping, you only get one open ticket, not a flood. A new one shows up only after the last one is resolved or cancelled. All thresholds come from environment variables, and the test suite covers all three rules. -->
 
 ---
 
@@ -118,7 +118,7 @@ demonstrated live or through Postman when Wokwi or the network is unavailable.
 
 _Student report → staff workflow → sensor-triggered ticket_
 
-<!-- We will now walk through a live demonstration. The demo follows one complete story: a student reports a problem, a staff member picks it up and works through the workflow, and then an IoT sensor detects an issue and raises a ticket automatically. The same workflow applies to both paths. Credentials are: naledi for student, lerato for staff, admin for administrator — all with password Campus hash 2026. -->
+<!-- Let's do the live demo. One story: student reports a problem, staff works through it, sensor trips and raises its own ticket. Same workflow both ways. Logins: naledi (student), lerato (staff), admin — password Campus#2026. -->
 
 ---
 
@@ -126,7 +126,7 @@ _Student report → staff workflow → sensor-triggered ticket_
 
 ![w:1150](../screenshots/02-student-overview.png)
 
-<!-- This is the student dashboard after logging in as naledi. Notice the personal counters at the top — students only ever see their own world. They cannot see other students' requests or any staff-level information. The overview shows their request counts by status. From here they can navigate to Requests to see their full list, log a new request, or check their notifications. Every request shows its current status and a brief history. Let me point out that if a student tries to access another student's request by guessing the ID, they get a 404 — not the data. This is enforced at the object level in our permissions system and proven by a named test. -->
+<!-- Logged in as naledi. See the counters at the top — students only see their own stuff. They cannot see anyone else's requests. From here they can go to Requests, log a new one, or check notifications. Try guessing another student's request ID and you get a 404. There is a test that proves it. -->
 
 ---
 
@@ -134,7 +134,7 @@ _Student report → staff workflow → sensor-triggered ticket_
 
 ![w:1150](../screenshots/06-request-detail-workflow.png)
 
-<!-- This shows the staff view of a request with its full history timeline. Staff see all requests across campus — not just their own. When a staff member opens a request, they see the complete detail: title, description, category, priority, location, and the current status. The history timeline at the bottom shows every state change with a timestamp and comment — who did what and when. Staff can assign the request to themselves or a colleague, moving it to ASSIGNED. They then progress it through IN_PROGRESS to RESOLVED, adding a comment at each step. An important constraint: the workflow enforces valid transitions. You cannot jump from PENDING directly to RESOLVED — the service layer rejects that. This is the same service layer used by the API, the seed command, and the IoT rules, so there is no side door. -->
+<!-- Staff see everything. Open a request and you get the full picture: title, description, category, priority, location, status. The timeline at the bottom shows every change — who did what and when. Assign it, move it forward, resolve it. One thing: you cannot skip steps. PENDING straight to RESOLVED gets rejected. The same service layer backs the API, the seed command, and the IoT rules — no side door. -->
 
 ---
 
@@ -142,7 +142,7 @@ _Student report → staff workflow → sensor-triggered ticket_
 
 ![w:1150](../screenshots/07-sensor-charts.png)
 
-<!-- The sensor dashboard shows twelve hours of live telemetry history for all three IoT devices. You can see the network reachability chart, moisture readings from the water leak sensor, and smoke and temperature readings from the fire sensor. Each chart updates in real-time as the sensors post data. During the live demo, we switch to Wokwi and run the water simulation — dragging the potentiometer past 60% triggers an automatic HTTP 201 response. Back in CSRMS, a new SYSTEM ticket appears in the Facilities category at HIGH priority. Posting a second high reading does not create a duplicate — the dedupe key ensures only one open ticket per sensor and location. If time allows, we also demonstrate the fire sensor by pushing the DHT22 temperature slider past 50 degrees, which creates a CRITICAL Safety ticket. The network monitor can be demonstrated through Postman when Wokwi or live network connectivity is limited. -->
+<!-- Twelve hours of sensor history on one page — network, moisture, smoke and temperature. During the demo we flip to Wokwi, run the water sim, drag the potentiometer past 60%. You see HTTP 201 on the serial monitor. Back in CSRMS, a SYSTEM ticket appeared under Facilities. Post another high reading — no duplicate, dedupe key blocks it. If we have time, same thing with the fire sensor: push the DHT22 past 50 degrees, CRITICAL Safety ticket. Network monitor can be shown through Postman if Wokwi is not cooperating. -->
 
 ---
 
@@ -155,7 +155,7 @@ _Student report → staff workflow → sensor-triggered ticket_
 - Performance (50 rounds/endpoint): **p95 under 8 ms** on all reads;
   JWT checks are DB-free, lists are paginated
 
-<!-- Our testing strategy covers four levels. First, 61 automated API and service tests run via Django's APITestCase framework — every security claim we make has a corresponding negative test: wrong password returns 401, student cannot see another student's request, user JWT cannot post telemetry, all three sensor triggers are verified, and deduplication is proven. Second, the IoT firmware has structural validation via a Python script that checks all three Wokwi sketch files, plus automated scenario tests that drive the sensors to their trigger thresholds. Third, a Playwright browser walkthrough exercises all three roles — student, staff, and admin — and the screenshots it captures are what you see in this presentation. Fourth, the Postman collection provides a manual API demonstration and fallback. Performance-wise, we probed every read endpoint with 50 rounds and achieved p95 under 8 milliseconds. JWT token checks are database-free, and all list endpoints are paginated. -->
+<!-- 61 tests in Django's test suite — wrong password, object visibility, device key separation, all three sensor rules, deduplication. Every claim we made has a test trying to break it. Firmware side: a Python script validates the sketch structure, and Wokwi scenarios push the sensors past their thresholds. Playwright walks through all three roles in the browser — that is where these screenshots came from. Postman covers the API by hand. On performance, we timed every read endpoint 50 times — p95 under 8 milliseconds across the board. JWT checks do not touch the database, lists are paginated. -->
 
 ---
 
@@ -170,7 +170,7 @@ Next, in order:
 3. Real ESP32 hardware (same sketches, new WiFi credentials)
 4. MySQL deployment behind HTTPS
 
-<!-- We want to be honest about the limitations. The IoT sensors run on Wokwi simulated hardware — the same sketches work on real ESP32 boards, but we did not have physical hardware for this submission. Notifications are pull-only: students check their dashboard rather than receiving push alerts. Performance data was collected on laptop scale, not production infrastructure. Looking ahead, the first priority is email and push notifications with staff digests — so staff get alerted when new tickets arrive. Second is SLA tracking with automatic escalation — if a HIGH priority ticket is not picked up within a set time, it escalates. Third is moving to real ESP32 hardware, which requires only changing WiFi credentials and the API URL in the existing sketches. Fourth is a MySQL deployment behind HTTPS for production-grade storage and transport security. -->
+<!-- What we did not do. Sensors are simulated — same code runs on real ESP32, we just did not have the hardware. Notifications only show up in the app, no email or push. Performance numbers are from a laptop, not a production server. If we had more time: push notifications so staff get alerted, SLA tracking to escalate stale tickets, real hardware, and MySQL behind HTTPS. The sketches need only WiFi credentials and an API URL to run on real boards. -->
 
 ---
 
@@ -180,7 +180,7 @@ Next, in order:
 
 Student report → staff triage → simulated sensor trips → SYSTEM ticket. Same file: `docs/demo/assets/csrms-demo.webm`
 
-<!-- This is a recording of the full end-to-end workflow. It shows a student logging in and reporting a problem, a staff member picking it up and working through the status transitions, and then the IoT sensors tripping and raising SYSTEM tickets automatically. The entire sequence — from student report through staff triage to sensor-triggered tickets — is one continuous workflow recorded in real time. The same video file is available at docs/demo/assets/csrms-demo.webm if you want to review it later. -->
+<!-- Full recording of the workflow: student logs in and reports, staff picks it up and works through the statuses, sensors trip and SYSTEM tickets appear. One take, real time. File is at docs/demo/assets/csrms-demo.webm. -->
 
 ---
 
@@ -192,4 +192,4 @@ github.com/altechemist/NADV74
 
 `README.md` → running everything in three commands
 
-<!-- That concludes our presentation. The full codebase, documentation, test plan, and this slide deck are available on GitHub at github.com/altechemist/NADV74. The README.md in the repository root explains how to run everything in three commands — backend, frontend, and IoT simulations. We are happy to take questions. Thank you. -->
+<!-- Everything is on GitHub — code, tests, docs, this deck. README gets you running in three commands. Questions? -->

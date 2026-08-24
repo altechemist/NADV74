@@ -25,7 +25,7 @@ from .services import handle_reading
 class IsDeviceKey(IsAuthenticated):
     """
     Only requests that presented a device key get through. A valid user JWT
-    is deliberately not enough here: sensors are not people.
+    is not enough here: sensors are not people.
     """
 
     def has_permission(self, request, view):

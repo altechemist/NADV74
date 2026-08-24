@@ -90,7 +90,7 @@ Findings:
 
 ## 6. Defect handling
 
-Defects found during development were fixed and pinned with a regression test before moving on. Two examples worth noting:
+Defects found during development were fixed and pinned with a regression test before moving on. Two examples:
 
 1. Telemetry authentication initially returned 403 (forbidden) instead of 401 for missing keys — fixed by adding an authenticate header, then locked in by `test_missing_key_rejected`.
 2. The network failure streak was counted across all locations; it is now scoped per device/location so an outage in one building cannot trip another building's rule.

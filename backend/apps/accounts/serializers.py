@@ -17,9 +17,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     """
-    Public sign-up. The role field is deliberately not writable here:
-    whatever the client posts, the account is created as a STUDENT. Staff
-    and admin accounts can only be issued by an administrator via /users/.
+    Public sign-up. The role field is not writable here: whatever the client
+    posts, the account is created as a STUDENT. Staff and admin accounts can
+    only be issued by an administrator via /users/.
     """
 
     password = serializers.CharField(write_only=True, trim_whitespace=False)

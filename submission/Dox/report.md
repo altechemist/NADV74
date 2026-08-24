@@ -14,14 +14,15 @@ date: "August 2026"
 | **Institution** | Sol Plaatje University, Northern Cape   |
 | **Due date**    | 24 August 2026                          |
 
-> **Team members:**
+> **Team members**
 >
-> | Full name            | Student number |
-> | -------------------- | -------------- |
-> | Karabelo Nthoroane   | 202328762      |
-> | Khulani Hlebeya      | 202302091      |
-> | Kegomoditswe Mongale | 201718863      |
-> | Metswi kabo          | 202104098      |
+> | Full name | Student number | Contribution |
+> |---|---|---|
+> | *(Karabelo Nthoroane)* | *(202328762)* | Backend / API |
+> | *(Khulani Hlebeya)* | *(202302091)* | Frontend |
+> | *(Metswi Kabo)* | *(202104098)* | IoT simulations |
+> | *(Kegomoditswe Mongale)* | *(201718863)* | Testing and documentation |
+> | *(Kegomoditswe Mongale)* | *(201718863)* | Report and demo preparation |
 
 \newpage
 
@@ -63,12 +64,11 @@ the same ideas that run production IT organisations:
   (`PENDING → ASSIGNED → IN_PROGRESS → RESOLVED`) with a full audit trail, mirroring
   ITIL-style incident management.
 - **Security engineering.** JWT authentication, role-based access control down to
-  individual objects, and separate hashed credentials for devices are all first-class
-  requirements rather than afterthoughts.
+  individual objects, and separate hashed credentials for devices are built in from
+  the start.
 
-The system is deliberately small enough to build in a semester but exercises every layer a
-real deployment would: database, API, web frontend, embedded clients, automated tests and
-version control.
+The system is sized to fit a semester but still exercises every layer a real deployment
+would: database, API, web frontend, embedded clients, automated tests and version control.
 
 ## 1.3 Aim and objectives
 
@@ -352,9 +352,9 @@ than hidden.
 - Notifications are pull-only (seen in-app when logged in). There is no email or push
   delivery.
 - Performance was measured on a laptop-scale dataset; concurrency behaviour under
-  simultaneous writes was analysed rather than load-tested.
+  simultaneous writes was analysed but not load-tested.
 - The fire/smoke rule evaluates instantaneous readings; a sustained-condition window
-  (e.g. N readings above threshold) would be more robust against false positives.
+  (e.g. N readings above threshold) would cut down on false positives.
 
 **Future work, in priority order:**
 
@@ -369,13 +369,13 @@ than hidden.
 
 # 7. Conclusion
 
-CSRMS demonstrates that a small, disciplined team can deliver the full arc of modern
-service-system development in one module: a secure REST API, a role-aware web client,
-automated IoT monitoring, a meaningful automated test suite and documentation a stranger
-can follow. The system solves the stated campus problem — reports get logged, work gets
-tracked, sensors speak for the infrastructure — and does it with the same architectural
-habits (service orientation, least privilege, audit trails, configuration as environment)
-that scale to real deployments.
+CSRMS shows that a small team can build the full stack for a campus service system in
+one module: a secure REST API, a role-aware web client, automated IoT monitoring, a test
+suite that covers both functionality and security, and documentation a stranger can follow.
+The system solves the campus problem it set out to address — reports get logged, work gets
+tracked, sensors watch the infrastructure — and does it with the same architectural habits
+(service orientation, least privilege, audit trails, environment-based configuration) that
+would scale to a real deployment.
 
 \newpage
 
